@@ -1,0 +1,33 @@
+// ============================================================
+//  Demonstração da Cryo-Math
+//      python burnout/cryoc.py Cryo-Math/examples/demo.cryo --backend pyro --run
+// ============================================================
+
+import "../math.cryo" as m;
+
+print("=== Cryo-Math ===");
+print("pi           = ${m::PI}");
+print("sqrt(2)      = ${m::sqrt(2.0)}");
+print("cbrt(-27)    = ${m::cbrt(-27.0)}");
+print("2^0.5        = ${m::pow(2.0, 0.5)}");
+print("e^2          = ${m::exp(2.0)}");
+print("ln(100)      = ${m::ln(100.0)}");
+print("log10(5000)  = ${m::log10(5000.0)}");
+
+number angle = m::deg_to_rad(30.0);
+print("sin(30 graus) = ${m::sin(angle):.6f}");
+print("cos(30 graus) = ${m::cos(angle):.6f}");
+print("tan(30 graus) = ${m::tan(angle):.6f}");
+
+print("10!          = ${m::factorial(10)}");
+print("C(10, 3)     = ${m::binomial(10, 3)}");
+print("mdc(84, 36)  = ${m::gcd(84, 36)}");
+print("97 e primo?  = ${m::is_prime(97)}");
+
+number[] notas = [7.5, 8.0, 6.5, 9.0, 10.0];
+print("media        = ${m::mean(notas)}");
+print("mediana      = ${m::median(notas)}");
+print("desvio pad.  = ${m::std_dev(notas):.4f}");
+
+print("15% de 250   = ${m::percent(250.0, 15.0)}");
+print("R$1000 a 1% por 12 meses = ${m::compound(1000.0, 0.01, 12):.2f}");

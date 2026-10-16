@@ -1,0 +1,197 @@
+// ============================================================
+//  Testes da Cryo-Math
+//
+//  Rode a partir da pasta que contém burnout/ e cryo/:
+//      python burnout/cryoc.py Cryo-Math/tests/test_math.cryo --backend pyro --run
+//
+//  É um programa comum (e não `cryoc test`) porque o runner de testes
+//  do Burnout ainda não resolve `import`. O programa termina com um
+//  assert, então o código de saída é != 0 se algum teste falhar.
+// ============================================================
+
+import "../math.cryo" as m;
+
+int passed = 0;
+int failed = 0;
+
+fn ok(bool cond, string what) ={
+    if (cond) {
+        passed = passed + 1;
+    } else {
+        failed = failed + 1;
+        print("  FALHOU  " + what);
+    }
+}
+
+fn check(number got, number want, string what) ={
+    bool good = m::is_close(got, want, 0.000000000001);
+    ok(good, what + ": esperado " + to_string(want) + ", obtido " + to_string(got));
+}
+
+// Retorna a mensagem de erro lançada por f(x), ou "" se não lançou.
+fn error_of(string op, number x) -> string ={
+    string msg = "";
+    try {
+        number r = _call(op, x);
+    } catch (string e) {
+        msg = e;
+    }
+    return msg;
+}
+
+fn _call(string op, number x) -> number ={
+    if (op == "sqrt") { return m::sqrt(x); }
+    if (op == "ln") { return m::ln(x); }
+    if (op == "asin") { return m::asin(x); }
+    return m::fmod(1.0, x);
+}
+
+fn test_basic() ={
+    check(m::abs(-3.5), 3.5, "abs");
+    check(m::sign(-2.0), -1.0, "sign");
+    check(m::floor(-2.5), -3.0, "floor negativo");
+    check(m::floor(2.5), 2.0, "floor");
+    check(m::ceil(-2.5), -2.0, "ceil negativo");
+    check(m::ceil(2.1), 3.0, "ceil");
+    check(m::round(2.5), 3.0, "round .5");
+    check(m::round(-2.5), -3.0, "round -.5");
+    check(m::round_to(3.14159, 2), 3.14, "round_to");
+    check(m::trunc(-7.9), -7.0, "trunc");
+    check(m::fmod(7.5, 2.0), 1.5, "fmod");
+    check(m::fmod(-7.5, 2.0), -1.5, "fmod negativo");
+    check(m::mod(-7.5, 2.0), 0.5, "mod");
+    check(m::clamp(15.0, 0.0, 10.0), 10.0, "clamp");
+    check(m::lerp(0.0, 10.0, 0.25), 2.5, "lerp");
+    check(m::deg_to_rad(180.0), m::PI, "deg_to_rad");
+    check(m::rad_to_deg(m::HALF_PI), 90.0, "rad_to_deg");
+    ok(m::is_integer(4.0) && !m::is_integer(4.5), "is_integer");
+}
+
+fn test_powers() ={
+    check(m::sqrt(2.0), 1.4142135623730951, "sqrt(2)");
+    check(m::sqrt(144.0), 12.0, "sqrt(144)");
+    check(m::sqrt(0.0001), 0.01, "sqrt(0.0001)");
+    check(m::sqrt(1000000000000.0), 1000000.0, "sqrt(1e12)");
+    check(m::cbrt(27.0), 3.0, "cbrt(27)");
+    check(m::cbrt(-8.0), -2.0, "cbrt(-8)");
+    check(m::nth_root(32.0, 5), 2.0, "nth_root");
+    check(m::ipow(2.0, 10), 1024.0, "ipow");
+    check(m::ipow(2.0, -2), 0.25, "ipow negativo");
+    check(m::pow(2.0, 0.5), m::SQRT2, "pow fracionario");
+    check(m::pow(-2.0, 3.0), -8.0, "pow base negativa");
+    check(m::hypot(3.0, 4.0), 5.0, "hypot");
+}
+
+fn test_exp_log() ={
+    check(m::exp(1.0), m::E, "exp(1)");
+    check(m::exp(0.0), 1.0, "exp(0)");
+    check(m::exp(-1.0), 1.0 / m::E, "exp(-1)");
+    check(m::exp(10.0), 22026.465794806718, "exp(10)");
+    check(m::ln(m::E), 1.0, "ln(e)");
+    check(m::ln(1.0), 0.0, "ln(1)");
+    check(m::ln(10.0), m::LN10, "ln(10)");
+    check(m::ln(0.5), -m::LN2, "ln(0.5)");
+    check(m::log10(1000.0), 3.0, "log10");
+    check(m::log2(1024.0), 10.0, "log2");
+    check(m::log(81.0, 3.0), 4.0, "log base 3");
+}
+
+fn test_trig() ={
+    check(m::sin(0.0), 0.0, "sin(0)");
+    check(m::sin(m::PI / 6.0), 0.5, "sin(pi/6)");
+    check(m::sin(m::HALF_PI), 1.0, "sin(pi/2)");
+    check(m::sin(-m::HALF_PI), -1.0, "sin(-pi/2)");
+    check(m::sin(10.0), -0.5440211108893698, "sin(10)");
+    check(m::cos(0.0), 1.0, "cos(0)");
+    check(m::cos(m::PI), -1.0, "cos(pi)");
+    check(m::cos(m::PI / 3.0), 0.5, "cos(pi/3)");
+    check(m::cos(10.0), -0.8390715290764524, "cos(10)");
+    check(m::tan(m::PI / 4.0), 1.0, "tan(pi/4)");
+    check(m::atan(1.0), m::PI / 4.0, "atan(1)");
+    check(m::atan(-10.0), -1.4711276743037347, "atan(-10)");
+    check(m::atan2(1.0, -1.0), 3.0 * m::PI / 4.0, "atan2");
+    check(m::asin(0.5), m::PI / 6.0, "asin");
+    check(m::acos(0.5), m::PI / 3.0, "acos");
+    check(m::acos(-1.0), m::PI, "acos(-1)");
+}
+
+fn test_hyperbolic() ={
+    check(m::sinh(1.0), 1.1752011936438014, "sinh");
+    check(m::sinh(0.1), 0.10016675001984403, "sinh pequeno");
+    check(m::cosh(1.0), 1.5430806348152437, "cosh");
+    check(m::tanh(0.5), 0.46211715726000974, "tanh");
+    check(m::asinh(1.0), 0.881373587019543, "asinh");
+    check(m::acosh(2.0), 1.3169578969248166, "acosh");
+    check(m::atanh(0.5), 0.5493061443340549, "atanh");
+}
+
+fn test_integers() ={
+    ok(m::factorial(0) == 1, "0!");
+    ok(m::factorial(10) == 3628800, "10!");
+    ok(m::factorial(20) == 2432902008176640000, "20!");
+    ok(m::fib(10) == 55, "fib(10)");
+    ok(m::fib(92) == 7540113804746346429, "fib(92)");
+    ok(m::gcd(48, -18) == 6, "gcd");
+    ok(m::lcm(4, 6) == 12, "lcm");
+    ok(m::is_prime(97) && !m::is_prime(91) && !m::is_prime(1), "is_prime");
+    ok(m::is_prime(2147483647), "primo de Mersenne");
+    int[] f = m::prime_factors(360);
+    ok(len(f) == 6 && f[0] == 2 && f[5] == 5, "prime_factors");
+    ok(m::binomial(5, 2) == 10, "C(5,2)");
+    ok(m::binomial(52, 5) == 2598960, "C(52,5)");
+    ok(m::permutations(5, 2) == 20, "A(5,2)");
+    ok(m::mod_pow(2, 10, 1000) == 24, "mod_pow");
+    ok(m::mod_pow(3, 200, 1000000007) == m::mod_pow(9, 100, 1000000007), "mod_pow grande");
+    ok(m::is_even(4) && m::is_odd(7), "par/impar");
+}
+
+fn test_stats() ={
+    number[] xs = [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0];
+    check(m::sum(xs), 40.0, "sum");
+    check(m::mean(xs), 5.0, "mean");
+    check(m::median(xs), 4.5, "median par");
+    number[] odd = [3.0, 1.0, 2.0];
+    check(m::median(odd), 2.0, "median impar");
+    check(m::variance(xs), 4.0, "variance");
+    check(m::std_dev(xs), 2.0, "std_dev");
+    number[] four = [1.0, 2.0, 3.0, 4.0];
+    check(m::sample_variance(four), 1.6666666666666667, "sample_variance");
+    check(m::min_of(xs), 2.0, "min_of");
+    check(m::max_of(xs), 9.0, "max_of");
+    number[] factors = [1.5, 2.0, 4.0];
+    check(m::product(factors), 12.0, "product");
+    number[] unsorted = [3.0, -1.0, 2.0];
+    number[] s = m::sorted(unsorted);
+    ok(s[0] == -1.0 && s[2] == 3.0, "sorted");
+    number[] tenths = [0.1, 0.2, 0.3];
+    check(m::sum(tenths), 0.6, "soma de Kahan");
+}
+
+fn test_percent() ={
+    check(m::percent(200.0, 15.0), 30.0, "percent");
+    check(m::percent_of(30.0, 200.0), 15.0, "percent_of");
+    check(m::percent_change(50.0, 75.0), 50.0, "percent_change");
+    check(m::compound(1000.0, 0.1, 2), 1210.0, "compound");
+}
+
+fn test_errors() ={
+    ok(starts_with(error_of("sqrt", -1.0), "[cryo-math] sqrt"), "sqrt negativo lanca");
+    ok(starts_with(error_of("ln", 0.0), "[cryo-math] ln"), "ln(0) lanca");
+    ok(starts_with(error_of("asin", 2.0), "[cryo-math] asin"), "asin(2) lanca");
+    ok(starts_with(error_of("fmod", 0.0), "[cryo-math] fmod"), "fmod por zero lanca");
+    ok(error_of("sqrt", 4.0) == "", "sqrt(4) nao lanca");
+}
+
+// ── runner ───────────────────────────────────────────────────
+print("Cryo-Math — testes");
+test_basic();
+test_powers();
+test_exp_log();
+test_trig();
+test_hyperbolic();
+test_integers();
+test_stats();
+test_percent();
+test_errors();
+print("${passed} ok, ${failed} falha(s)");
+assert(failed == 0, "ha testes falhando");
