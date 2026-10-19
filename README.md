@@ -128,20 +128,16 @@ Argumentos fora do domínio (`sqrt(-1)`, `ln(0)`, `asin(2)`, `fmod(x, 0)`, `fact
 ```cryo
 import "@cryo_math/math.cryo" as m;
 
-fn raiz(number x) -> number ={ return m::sqrt(x); }
-
 try {
-    print(raiz(-4.0));
+    print(m::sqrt(-4.0));
 } catch (string e) {
     print(e);    // [cryo-math] sqrt: raiz de numero negativo
 }
 ```
 
-> **Atenção:** na versão atual do compilador, uma chamada `m::funcao(...)` escrita **diretamente** dentro de um bloco `try`, `switch` ou `assert` não é resolvida (erro `unknown function 'm::...'`). Coloque a chamada numa função auxiliar, como `raiz` acima.
-
 ## Testes e exemplo
 
-Com o [Burnout](https://github.com/Victor-477/Burnout), o [Cryo](https://github.com/Victor-477/Cryo) (branch `dev`) e o [Pyro](https://github.com/Victor-477/pyro) clonados ao lado desta pasta como `burnout/`, `cryo/` e `pyro/`:
+Com o [Burnout](https://github.com/Victor-477/Burnout), o [Cryo](https://github.com/Victor-477/Cryo) e o [Pyro](https://github.com/Victor-477/pyro) clonados ao lado desta pasta como `burnout/`, `cryo/` e `pyro/`:
 
 ```bash
 # suíte de testes (101 verificações; o código de saída é != 0 se alguma falhar)
@@ -152,6 +148,8 @@ python burnout/cryoc.py Cryo-Math/examples/demo.cryo --backend pyro --run
 ```
 
 Os testes também rodam com `--backend node` e `--backend go`.
+
+Para escrever a sua própria biblioteca no mesmo formato, veja [Writing a library](https://victor-477.github.io/Cryo-Pyro-Documentation/#/bibliotecas) na documentação da linguagem.
 
 ## Licença
 
